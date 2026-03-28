@@ -1,0 +1,10 @@
+[
+  { "id": 1001, "name": "Toyota Vios", "capacity": 42, "type": "car" },
+  { "id": 1002, "name": "Honda City", "capacity": 40, "type": "car" },
+  { "id": 1003, "name": "Hyundai Accent", "capacity": 45, "type": "car" },
+  { "id": 1004, "name": "Mazda 3", "capacity": 51, "type": "car" },
+  { "id": 1005, "name": "Kia Seltos", "capacity": 50, "type": "car" },
+  { "id": 1006, "name": "Toyota Camry", "capacity": 60, "type": "car" },
+  { "id": 1007, "name": "Honda CR-V", "capacity": 57, "type": "car" },
+  { "id": 1008, "name": "Ford Ranger", "capacity": 80, "type": "car" }
+]

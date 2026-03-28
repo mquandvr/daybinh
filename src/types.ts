@@ -5,10 +5,9 @@ export interface FuelPrice {
   change?: number;
 }
 
-export interface BikeData {
+export interface VehicleData {
   id: number;
   name: string;
   capacity: number;
+  type: "motorcycle" | "car";
 }
-
-export type VehicleTab = "motorcycle" | "car";

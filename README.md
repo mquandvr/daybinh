@@ -6,15 +6,18 @@
 
 This contains everything you need to run your app locally.
 
-View your app in AI Studio: https://ai.studio/apps/97dc1512-e895-485a-b5cf-b7b331666467
-
 ## Run Locally
 
-**Prerequisites:**  Node.js
-
+**Prerequisites:** Node.js
 
 1. Install dependencies:
    `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
+2. Run the app:
    `npm run dev`
+
+## GitHub Pages Deployment
+
+To deploy to GitHub Pages:
+1. Run `npm run build`.
+2. Deploy the contents of the `dist` folder.
+*Note: Fuel and vehicle data fetching may require a CORS proxy if deployed to a static environment like GitHub Pages.*

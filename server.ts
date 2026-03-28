@@ -22,22 +22,23 @@ async function startServer() {
       console.error("Error fetching fuel data:", error);
       res.status(500).json({ error: "Failed to fetch fuel data" });
     }
-  });
+  }); 
 
-  // Proxy for Google Sheets to avoid CORS
-  app.get("/api/proxy/bikes", async (req, res) => {
+  // Proxy for Google Apps Script to avoid CORS
+  app.get("/api/proxy/vehicles", async (req, res) => {
     try {
-      const sheetId = "1lHjh3yN0W5I_hCUHcUr3kNMF4lMyl9QMD_-Tr_-q5yE";
-      const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json`;
-      const response = await axios.get(url);
-      
-      // Strip the prefix and suffix from Google's response
-      const data = response.data;
-      const jsonStr = data.substring(data.indexOf("(") + 1, data.lastIndexOf(")"));
-      res.json(JSON.parse(jsonStr));
+      const url = "https://script.google.com/macros/s/AKfycbzyhYBKeJpj5DYNZ4s6He4X9CXE09lnckQTOeJA7S6M7DEPHYhKNOYsZayKMf-hLMre/exec";
+      const response = await axios.get(url, {
+        maxRedirects: 5,
+        headers: {
+          'Accept': 'application/json',
+          'User-Agent': 'Mozilla/5.0'
+        }
+      });
+      res.json(response.data);
     } catch (error) {
-      console.error("Error fetching bike data:", error);
-      res.status(500).json({ error: "Failed to fetch bike data" });
+      console.error("Error fetching vehicle data:", error);
+      res.status(500).json({ error: "Failed to fetch vehicle data" });
     }
   });
 

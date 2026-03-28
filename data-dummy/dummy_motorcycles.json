@@ -1,0 +1,10 @@
+[
+  { "id": 2001, "name": "Honda Vision", "capacity": 5.2, "type": "motorcycle" },
+  { "id": 2002, "name": "Honda Air Blade 125/160", "capacity": 4.4, "type": "motorcycle" },
+  { "id": 2003, "name": "Honda SH 125i/150i", "capacity": 7.8, "type": "motorcycle" },
+  { "id": 2004, "name": "Honda Lead", "capacity": 6.0, "type": "motorcycle" },
+  { "id": 2005, "name": "Yamaha Exciter 155", "capacity": 5.4, "type": "motorcycle" },
+  { "id": 2006, "name": "Yamaha Grande", "capacity": 4.4, "type": "motorcycle" },
+  { "id": 2007, "name": "Honda Winner X", "capacity": 4.5, "type": "motorcycle" },
+  { "id": 2008, "name": "Honda Vario 160", "capacity": 5.5, "type": "motorcycle" }
+]

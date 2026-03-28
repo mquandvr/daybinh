@@ -1,61 +1,79 @@
 import React from "react";
-import { Info, TrendingUp, TrendingDown } from "lucide-react";
+import { TrendingUp, TrendingDown } from "lucide-react";
 import { FuelPrice } from "../../types";
+import { UI_TEXT, MESSAGES } from "../../constants";
 
 interface FuelPriceListProps {
   loading?: boolean;
   fuelPrices: FuelPrice[];
-  selectedFuel: FuelPrice | null;
-  setSelectedFuel: (fuel: FuelPrice) => void;
 }
 
 export default function FuelPriceList({
   loading,
   fuelPrices,
-  selectedFuel,
-  setSelectedFuel,
 }: FuelPriceListProps) {
-  return (
-    <div className={`space-y-4 ${loading ? 'opacity-50 pointer-events-none' : ''}`}>
-      <h2 className="text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400 flex items-center gap-2">
-        <Info className="w-4 h-4" /> Giá Xăng Hôm Nay
-      </h2>
-      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 overflow-hidden transition-colors duration-300">
-        {fuelPrices.map((fuel) => (
-          <button
-            key={fuel.name}
-            disabled={loading}
-            onClick={() => setSelectedFuel(fuel)}
-            className={`w-full text-left p-3 border-b border-gray-50 dark:border-slate-800 last:border-0 transition-all ${
-              selectedFuel?.name === fuel.name
-                ? "bg-slate-50 dark:bg-slate-800 border-l-4 border-l-slate-900 dark:border-l-white"
-                : "hover:bg-gray-50 dark:hover:bg-slate-800/50 border-l-4 border-l-transparent"
-            } ${loading ? 'cursor-not-allowed' : ''}`}
-          >
-            <div className="flex flex-col gap-1">
-              <div className="flex justify-between items-baseline">
-                <span className={`font-bold ${selectedFuel?.name === fuel.name ? "text-slate-900 dark:text-white" : "text-slate-600 dark:text-slate-400"}`}>{fuel.name}</span>
-                <span className="font-black text-slate-900 dark:text-white text-lg leading-none">
-                  {fuel.price.toLocaleString("vi-VN")}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <div className="text-[10px] text-slate-400 dark:text-slate-500 font-black uppercase leading-none">VND / Lít</div>
-                <div className={`flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-black min-h-[18px] ${
-                  fuel.change === 0
-                    ? "invisible"
-                    : fuel.change! > 0
-                      ? "bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 border border-rose-100 dark:border-rose-900/50"
-                      : "bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/50"
-                }`}>
-                  {fuel.change! > 0 ? <TrendingUp className="w-3 h-3 mr-0.5" /> : fuel.change! < 0 ? <TrendingDown className="w-3 h-3 mr-0.5" /> : null}
-                  {fuel.change !== 0 ? Math.abs(fuel.change!).toLocaleString("vi-VN") : "0"}
+  const gasolinePrices = fuelPrices.filter(
+    (p) =>
+      p.name.toLowerCase().includes("xăng") ||
+      p.name.toLowerCase().includes("ron") ||
+      p.name.toLowerCase().includes("e5")
+  );
+  
+  const otherPrices = fuelPrices.filter(
+    (p) =>
+      p.name.toLowerCase().includes("do") ||
+      p.name.toLowerCase().includes("dầu") ||
+      p.name.toLowerCase().includes("ko")
+  );
+
+  const renderRow = (title: string, prices: FuelPrice[]) => (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2 px-1">
+        <div className="w-1 h-4 bg-orange-600 rounded-full" />
+        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
+          {title}
+        </h3>
+      </div>
+      <div className="w-full overflow-x-auto pb-2 scrollbar-hide">
+        <div className="flex gap-3 min-w-max">
+          {prices.map((fuel) => (
+            <div
+              key={fuel.name}
+              className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm min-w-[200px] transition-all duration-300 hover:shadow-md"
+            >
+              <div className="flex-1">
+                <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">
+                  {fuel.name}
+                </div>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-lg font-black text-gray-900 tracking-tighter">
+                    {fuel.price.toLocaleString("vi-VN")}
+                  </span>
+                  <span className="text-[8px] font-bold text-gray-400 uppercase">{MESSAGES.UNIT_VND_SHORT}</span>
                 </div>
               </div>
+              
+              {fuel.change !== 0 && (
+                <div className={`flex items-center text-[11px] font-black px-2 py-1.5 rounded-lg shadow-sm ${
+                  fuel.change! > 0 
+                    ? "bg-rose-50 text-rose-600" 
+                    : "bg-emerald-50 text-emerald-600"
+                }`}>
+                  {fuel.change! > 0 ? <TrendingUp className="w-3.5 h-3.5 mr-0.5" /> : <TrendingDown className="w-3.5 h-3.5 mr-0.5" />}
+                  {Math.abs(fuel.change!).toLocaleString("vi-VN")}
+                </div>
+              )}
             </div>
-          </button>
-        ))}
+          ))}
+        </div>
       </div>
+    </div>
+  );
+
+  return (
+    <div className={`space-y-6 ${loading ? 'opacity-50 pointer-events-none' : ''}`}>
+      {gasolinePrices.length > 0 && renderRow(UI_TEXT.FUEL_SECTION_GAS, gasolinePrices)}
+      {otherPrices.length > 0 && renderRow(UI_TEXT.FUEL_SECTION_OTHER, otherPrices)}
     </div>
   );
 }
