@@ -54,7 +54,7 @@ export default function FuelPriceList({
               </div>
               
               {fuel.change !== 0 && (
-                <div className={`flex items-baseline text-sm font-black leading-none ${
+                <div className={`flex items-center text-sm font-black leading-none ${
                   fuel.change! > 0 
                     ? "text-rose-600" 
                     : "text-emerald-600"
