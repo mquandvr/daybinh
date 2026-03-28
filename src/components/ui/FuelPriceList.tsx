@@ -39,27 +39,27 @@ export default function FuelPriceList({
           {prices.map((fuel) => (
             <div
               key={fuel.name}
-              className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm min-w-[200px] transition-all duration-300 hover:shadow-md"
+              className="flex items-end gap-4 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm min-w-[200px] transition-all duration-300 hover:shadow-md"
             >
               <div className="flex-1">
                 <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">
                   {fuel.name}
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-lg font-black text-gray-900 tracking-tighter">
+                  <span className="text-lg font-black text-gray-900 tracking-tighter leading-none">
                     {fuel.price.toLocaleString("vi-VN")}
                   </span>
-                  <span className="text-[8px] font-bold text-gray-400 uppercase">{MESSAGES.UNIT_VND_SHORT}</span>
+                  <span className="text-[8px] font-bold text-gray-400 uppercase leading-none">{MESSAGES.UNIT_VND_SHORT}</span>
                 </div>
               </div>
               
               {fuel.change !== 0 && (
-                <div className={`flex items-center text-[11px] font-black px-2 py-1.5 rounded-lg shadow-sm ${
+                <div className={`flex items-center text-lg font-black leading-none ${
                   fuel.change! > 0 
-                    ? "bg-rose-50 text-rose-600" 
-                    : "bg-emerald-50 text-emerald-600"
+                    ? "text-rose-600" 
+                    : "text-emerald-600"
                 }`}>
-                  {fuel.change! > 0 ? <TrendingUp className="w-3.5 h-3.5 mr-0.5" /> : <TrendingDown className="w-3.5 h-3.5 mr-0.5" />}
+                  {fuel.change! > 0 ? <TrendingUp className="w-5 h-5 mr-1" /> : <TrendingDown className="w-5 h-5 mr-1" />}
                   {Math.abs(fuel.change!).toLocaleString("vi-VN")}
                 </div>
               )}

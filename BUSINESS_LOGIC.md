@@ -13,9 +13,9 @@ The "Đầy Bình" application helps users calculate the cost of filling up thei
     - Categorizes fuel into 2 groups: "Gasoline" and "Kerosene & DO".
 
 ## 2. Vehicle Data
-- **Motorcycles:** Fetched from the proxy API `/api/proxy/vehicles` (VnExpress source) combined with `dummy_motorcycles.json` to ensure availability.
-- **Cars:** Uses `dummy_cars.json` data integrated into the source code.
-- **Fuel Capacity:** Extracted from the `fuel_tank` field of the vehicle data or taken directly from dummy data.
+- **Motorcycles:** Fetched from a Google Script API `https://script.google.com/macros/s/AKfycbzyhYBKeJpj5DYNZ4s6He4X9CXE09lnckQTOeJA7S6M7DEPHYhKNOYsZayKMf-hLMre/exec` combined with `dummy_motorcycles.json` as a fallback.
+- **Cars:** Currently uses `dummy_cars.json` data, managed through the common `apiService` for future API integration.
+- **Fuel Capacity:** Extracted from the `fuel_tank` or `capacity` field of the vehicle data.
 
 ## 3. Cost Calculation
 - **Formula:** `Cost = Fuel Tank Capacity (Liters) * Fuel Price (VND/Liter)`.
@@ -25,6 +25,7 @@ The "Đầy Bình" application helps users calculate the cost of filling up thei
 - **Light Mode:** The application exclusively uses a Light Mode interface.
 - **Search:** Users can search for motorcycles and cars simultaneously through two separate search inputs (50/50 split).
 - **Colors:** Uses standard Google colors (Blue, Red, Yellow, Green) to distinguish vehicles in the comparison table.
+- **Fuel Price Display:** Shows the current price and the price change (increase/decrease) with corresponding icons (TrendingUp/TrendingDown) and colors (Rose/Emerald) without background badges for a cleaner look.
 - **Storage:** The list of selected vehicles is saved to `localStorage` to persist state across page reloads.
 - **Auto-Update:** Data is automatically refreshed every 5 minutes.
 

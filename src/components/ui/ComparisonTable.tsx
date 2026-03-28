@@ -67,9 +67,9 @@ export default function ComparisonTable({
                     </button>
                     <div className="flex items-center gap-2">
                       {vehicle.type === "motorcycle" ? (
-                        <Bike className="w-3.5 h-3.5 text-slate-500" />
+                        <Bike className="w-4 h-4 text-slate-800" />
                       ) : (
-                        <Car className="w-3.5 h-3.5 text-slate-500" />
+                        <Car className="w-4 h-4 text-slate-800" />
                       )}
                       <div className={`font-bold ${BIKE_COLORS[index % BIKE_COLORS.length].text} text-sm tracking-tight`}>{vehicle.name}</div>
                     </div>

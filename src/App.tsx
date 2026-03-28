@@ -10,15 +10,14 @@ import { FuelPrice, VehicleData } from "./types";
 import VehicleTabComponent from "./components/VehicleTab";
 import Header from "./components/layout/Header";
 import Footer from "./components/layout/Footer";
-import { API_ENDPOINTS, MESSAGES, CONFIG, UI_TEXT } from "./constants";
-import { validateArray, parseFuelCapacity } from "./lib/utils";
-import dummyMotorcycles from "../data-dummy/dummy_motorcycles.json";
-import dummyCars from "../data-dummy/dummy_cars.json";
-import dummyFuels from "../data-dummy/dummy_fuels.json";
+import { fetchFuelPrices, fetchVehicles } from "./services/apiService";
+import { MESSAGES, CONFIG } from "./constants";
+import { validateArray } from "./lib/utils";
 
 export default function App() {
   const [fuelPrices, setFuelPrices] = useState<FuelPrice[]>([]);
   const [bikes, setBikes] = useState<VehicleData[]>([]);
+  const [cars, setCars] = useState<VehicleData[]>([]);
   const [selectedBikes, setSelectedBikes] = useState<VehicleData[]>([]);
   const [selectedCars, setSelectedCars] = useState<VehicleData[]>([]);
   const [fuelLoading, setFuelLoading] = useState(true);
@@ -35,77 +34,12 @@ export default function App() {
   const fetchFuelData = async () => {
     setFuelLoading(true);
     try {
-      let fuelRes;
       const today = new Date().toISOString().split("T")[0];
-      try {
-        fuelRes = await fetch(`${API_ENDPOINTS.FUEL_PROXY}?date=${today}`);
-        if (!fuelRes.ok) throw new Error("Proxy failed");
-      } catch (e) {
-        fuelRes = await fetch(API_ENDPOINTS.FUEL_DIRECT(today));
-      }
-      
-      const fuelData = await fuelRes.json();
-      
-      // Basic validation
-      if (!validateArray(fuelData)) {
-        throw new Error(MESSAGES.INVALID_DATA_FORMAT);
-      }
-
-      const arr1 = validateArray(fuelData[0]) ? fuelData[0] : [];
-      const arr3 = validateArray(fuelData[2]) ? fuelData[2] : [];
-
-      const displayData = arr1.length > 0 ? arr1 : arr3;
-      
-      if (displayData.length === 0) {
-        throw new Error(MESSAGES.NO_FUEL_DATA);
-      }
-
-      const prices: FuelPrice[] = displayData.map((item: any) => {
-        const name = item.title || item.name || MESSAGES.UNKNOWN_FUEL;
-        const price = Number(item.zone1_price) || 0;
-        const petrolimexId = item.petrolimex_id;
-        
-        let change = 0;
-        if (arr1.length > 0 && arr3.length > 0 && petrolimexId) {
-          const compareItem = arr3.find((p: any) => p.petrolimex_id === petrolimexId);
-          if (compareItem) {
-            const oldPrice = Number(compareItem.zone1_price) || 0;
-            change = price - oldPrice;
-          }
-        }
-        
-        return { name, price, unit: UI_TEXT.UNIT_VND_PER_LITRE, change };
-      }).filter(p => p.price > 0);
-
+      const { prices, isDummy } = await fetchFuelPrices(today);
       setFuelPrices(prices);
-      setLastUpdated(new Date().toLocaleTimeString());
+      setLastUpdated(new Date().toLocaleTimeString() + (isDummy ? MESSAGES.DUMMY_SUFFIX : ""));
     } catch (err) {
-      console.error("Fuel fetch error, using dummy data:", err);
-      
-      const dData = dummyFuels as any[][];
-      const dArr1 = validateArray(dData[0]) ? dData[0] : [];
-      const dArr3 = validateArray(dData[2]) ? dData[2] : [];
-      const dDisplay = dArr1.length > 0 ? dArr1 : dArr3;
-
-      const dPrices: FuelPrice[] = dDisplay.map((item: any) => {
-        const name = item.title || item.name || MESSAGES.UNKNOWN_FUEL;
-        const price = Number(item.zone1_price || item.price) || 0;
-        const petrolimexId = item.petrolimex_id;
-        
-        let change = 0;
-        if (dArr1.length > 0 && dArr3.length > 0 && petrolimexId) {
-          const compareItem = dArr3.find((p: any) => p.petrolimex_id === petrolimexId);
-          if (compareItem) {
-            const oldPrice = Number(compareItem.zone1_price || compareItem.price) || 0;
-            change = price - oldPrice;
-          }
-        }
-        
-        return { name, price, unit: UI_TEXT.UNIT_VND_PER_LITRE, change };
-      }).filter(p => p.price > 0);
-
-      setFuelPrices(dPrices);
-      setLastUpdated(new Date().toLocaleTimeString() + MESSAGES.DUMMY_SUFFIX);
+      console.error("Fuel fetch error:", err);
     } finally {
       setFuelLoading(false);
     }
@@ -114,21 +48,14 @@ export default function App() {
   const fetchVehicleData = async () => {
     setVehicleLoading(true);
     try {
-      const bikeRes = await fetch(API_ENDPOINTS.VEHICLE_PROXY);
-      if (!bikeRes.ok) throw new Error(MESSAGES.VEHICLE_FETCH_ERROR);
-      
-      const bikeJson = await bikeRes.json();
-      if (!validateArray(bikeJson)) throw new Error(MESSAGES.INVALID_DATA_FORMAT);
-
-      const parsedBikes: VehicleData[] = bikeJson.map((item: any, index: number) => {
-        const name = item.name || MESSAGES.UNKNOWN_BIKE;
-        const capacity = parseFuelCapacity(item.fuel_tank);
-        return { id: index, name, capacity, type: "motorcycle" };
-      });
+      const [parsedBikes, parsedCars] = await Promise.all([
+        fetchVehicles("motorcycle"),
+        fetchVehicles("car")
+      ]);
       setBikes(parsedBikes);
+      setCars(parsedCars);
     } catch (err) {
-      console.error("Vehicle fetch error, using dummy data:", err);
-      setBikes(dummyMotorcycles as VehicleData[]);
+      console.error("Vehicle fetch error:", err);
     } finally {
       setVehicleLoading(false);
     }
@@ -218,11 +145,11 @@ export default function App() {
   }, [bikes, bikeSearch]);
 
   const filteredCars = useMemo(() => {
-    if (!carSearch) return dummyCars as VehicleData[];
-    return (dummyCars as VehicleData[]).filter(car => 
+    if (!carSearch) return cars;
+    return cars.filter(car => 
       car.name.toLowerCase().includes(carSearch.toLowerCase())
     );
-  }, [carSearch]);
+  }, [cars, carSearch]);
 
   const comparisonFuels = useMemo(() => {
     return fuelPrices.filter(p => {
