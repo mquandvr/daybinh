@@ -54,12 +54,14 @@ export default function FuelPriceList({
               </div>
               
               {fuel.change !== 0 && (
-                <div className={`flex items-center text-lg font-black leading-none ${
+                <div className={`flex items-baseline text-sm font-black leading-none ${
                   fuel.change! > 0 
                     ? "text-rose-600" 
                     : "text-emerald-600"
                 }`}>
-                  {fuel.change! > 0 ? <TrendingUp className="w-5 h-5 mr-1" /> : <TrendingDown className="w-5 h-5 mr-1" />}
+                  <span className="flex items-center mr-1">
+                    {fuel.change! > 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+                  </span>
                   {Math.abs(fuel.change!).toLocaleString("vi-VN")}
                 </div>
               )}
