@@ -6,7 +6,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { RefreshCw, AlertCircle } from "lucide-react";
 import { motion } from "motion/react";
-import { FuelPrice, VehicleData } from "./types";
+import { FuelPrice, VehicleData, FuelData } from "./types";
 import VehicleTabComponent from "./components/VehicleTab";
 import Header from "./components/layout/Header";
 import Footer from "./components/layout/Footer";
@@ -15,7 +15,9 @@ import { MESSAGES, CONFIG } from "./constants";
 import { validateArray } from "./lib/utils";
 
 export default function App() {
-  const [fuelPrices, setFuelPrices] = useState<FuelPrice[]>([]);
+  const [fuelData, setFuelData] = useState<FuelData>({ petrolimex: [], pvoil: [] });
+  const [selectedProvider, setSelectedProvider] = useState<"Petrolimex" | "PVOIL">("Petrolimex");
+  const [selectedZone, setSelectedZone] = useState<1 | 2>(1);
   const [bikes, setBikes] = useState<VehicleData[]>([]);
   const [cars, setCars] = useState<VehicleData[]>([]);
   const [selectedBikes, setSelectedBikes] = useState<VehicleData[]>([]);
@@ -35,8 +37,8 @@ export default function App() {
     setFuelLoading(true);
     try {
       const today = new Date().toISOString().split("T")[0];
-      const { prices, isDummy } = await fetchFuelPrices(today);
-      setFuelPrices(prices);
+      const { data, isDummy } = await fetchFuelPrices(today);
+      setFuelData(data);
       setLastUpdated(new Date().toLocaleTimeString() + (isDummy ? MESSAGES.DUMMY_SUFFIX : ""));
     } catch (err) {
       console.error("Fuel fetch error:", err);
@@ -69,6 +71,8 @@ export default function App() {
   useEffect(() => {
     const savedBikes = localStorage.getItem("selectedBikes");
     const savedCars = localStorage.getItem("selectedCars");
+    const savedProvider = localStorage.getItem("selectedProvider");
+    const savedZone = localStorage.getItem("selectedZone");
 
     if (savedBikes) {
       try {
@@ -82,6 +86,14 @@ export default function App() {
         const parsed = JSON.parse(savedCars);
         if (validateArray(parsed)) setSelectedCars(parsed);
       } catch (e) {}
+    }
+
+    if (savedProvider === "Petrolimex" || savedProvider === "PVOIL") {
+      setSelectedProvider(savedProvider);
+    }
+
+    if (savedZone === "1" || savedZone === "2") {
+      setSelectedZone(Number(savedZone) as 1 | 2);
     }
 
     fetchData();
@@ -110,6 +122,14 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem("selectedCars", JSON.stringify(selectedCars));
   }, [selectedCars]);
+
+  useEffect(() => {
+    localStorage.setItem("selectedProvider", selectedProvider);
+  }, [selectedProvider]);
+
+  useEffect(() => {
+    localStorage.setItem("selectedZone", selectedZone.toString());
+  }, [selectedZone]);
 
   const toggleBikeSelection = (bike: VehicleData) => {
     setSelectedBikes(prev => {
@@ -152,15 +172,25 @@ export default function App() {
   }, [cars, carSearch]);
 
   const comparisonFuels = useMemo(() => {
-    return fuelPrices.filter(p => {
+    const prices = selectedProvider === "Petrolimex" ? fuelData.petrolimex : fuelData.pvoil;
+    return prices.filter(p => {
       const name = p.name.toLowerCase();
       // Always exclude kerosene (Dầu hỏa) and Diesel (DO)
       if (name.includes(MESSAGES.FILTER_KEROSENE) || name.includes(MESSAGES.FILTER_DIESEL)) return false;
       return true;
+    }).map(p => {
+      if (selectedProvider === "Petrolimex" && selectedZone === 2 && p.zone2_price !== undefined) {
+        return {
+          ...p,
+          price: p.zone2_price,
+          change: p.change2
+        };
+      }
+      return p;
     });
-  }, [fuelPrices]);
+  }, [fuelData, selectedProvider, selectedZone]);
 
-  if (fuelLoading && fuelPrices.length === 0 && vehicleLoading && bikes.length === 0) {
+  if (fuelLoading && fuelData.petrolimex.length === 0 && fuelData.pvoil.length === 0 && vehicleLoading && bikes.length === 0) {
     return (
       <div className="min-h-screen bg-[#F5F5F5] flex items-center justify-center p-4">
         <motion.div 
@@ -185,7 +215,7 @@ export default function App() {
       />
 
       <main className="max-w-7xl mx-auto p-4 sm:p-6 space-y-6 relative">
-        {(fuelLoading || vehicleLoading) && (fuelPrices.length > 0 || bikes.length > 0) && (
+        {(fuelLoading || vehicleLoading) && (fuelData.petrolimex.length > 0 || fuelData.pvoil.length > 0 || bikes.length > 0) && (
           <div className="fixed bottom-6 right-6 z-50">
             <div className="bg-white px-4 py-2 rounded-full shadow-2xl border border-gray-100 flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300">
               <RefreshCw className="w-4 h-4 text-orange-600 animate-spin" />
@@ -208,7 +238,12 @@ export default function App() {
         <VehicleTabComponent
           fuelLoading={fuelLoading}
           vehicleLoading={vehicleLoading}
-          fuelPrices={fuelPrices}
+          fuelPrices={comparisonFuels}
+          fuelData={fuelData}
+          selectedProvider={selectedProvider}
+          setSelectedProvider={setSelectedProvider}
+          selectedZone={selectedZone}
+          setSelectedZone={setSelectedZone}
           bikes={bikes}
           selectedBikes={selectedBikes}
           selectedCars={selectedCars}

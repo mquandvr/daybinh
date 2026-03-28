@@ -1,5 +1,5 @@
 import React from "react";
-import { Trash2, Plus, Bike, Car } from "lucide-react";
+import { Trash2, Plus, Bike, Car, MapPin, Fuel } from "lucide-react";
 import { FuelPrice, VehicleData } from "../../types";
 import { BIKE_COLORS, UI_TEXT } from "../../constants";
 import { formatCurrency, calculateFuelCost } from "../../lib/utils";
@@ -11,6 +11,10 @@ interface ComparisonTableProps {
   toggleSelection: (vehicle: VehicleData) => void;
   onAddMore: () => void;
   maxVehicles?: number;
+  selectedProvider: "Petrolimex" | "PVOIL";
+  setSelectedProvider: (provider: "Petrolimex" | "PVOIL") => void;
+  selectedZone: 1 | 2;
+  setSelectedZone: (zone: 1 | 2) => void;
 }
 
 export default function ComparisonTable({
@@ -20,14 +24,77 @@ export default function ComparisonTable({
   toggleSelection,
   onAddMore,
   maxVehicles = 10,
+  selectedProvider,
+  setSelectedProvider,
+  selectedZone,
+  setSelectedZone,
 }: ComparisonTableProps) {
   return (
     <div className={`space-y-4 ${loading ? 'opacity-50 pointer-events-none' : ''}`}>
-      <div className="flex justify-between items-end">
-        <label className="text-xs font-bold uppercase text-gray-400 tracking-widest">
-          {UI_TEXT.COMPARE_TABLE_LABEL}
-        </label>
-        <div className="text-[10px] text-gray-400 font-medium italic">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+        <div className="flex flex-wrap gap-3">
+          {/* Provider Selection */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest flex items-center gap-1">
+              <Fuel className="w-3 h-3" /> NHÀ CUNG CẤP
+            </label>
+            <div className="flex p-1 bg-gray-100 rounded-xl">
+              <button
+                onClick={() => setSelectedProvider('Petrolimex')}
+                className={`px-3 py-1.5 rounded-lg text-[10px] font-black transition-all duration-300 ${
+                  selectedProvider === 'Petrolimex'
+                    ? "bg-white text-orange-600 shadow-sm"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                PETROLIMEX
+              </button>
+              <button
+                onClick={() => setSelectedProvider('PVOIL')}
+                className={`px-3 py-1.5 rounded-lg text-[10px] font-black transition-all duration-300 ${
+                  selectedProvider === 'PVOIL'
+                    ? "bg-white text-blue-600 shadow-sm"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                PVOIL
+              </button>
+            </div>
+          </div>
+
+          {/* Zone Selection (Petrolimex only) */}
+          {selectedProvider === 'Petrolimex' && (
+            <div className="flex flex-col gap-1.5 animate-in fade-in slide-in-from-left-2 duration-300">
+              <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest flex items-center gap-1">
+                <MapPin className="w-3 h-3" /> KHU VỰC GIÁ
+              </label>
+              <div className="flex p-1 bg-gray-100 rounded-xl">
+                <button
+                  onClick={() => setSelectedZone(1)}
+                  className={`px-3 py-1.5 rounded-lg text-[10px] font-black transition-all duration-300 ${
+                    selectedZone === 1
+                      ? "bg-white text-blue-600 shadow-sm"
+                      : "text-gray-500 hover:text-gray-700"
+                  }`}
+                >
+                  VÙNG 1
+                </button>
+                <button
+                  onClick={() => setSelectedZone(2)}
+                  className={`px-3 py-1.5 rounded-lg text-[10px] font-black transition-all duration-300 ${
+                    selectedZone === 2
+                      ? "bg-white text-orange-600 shadow-sm"
+                      : "text-gray-500 hover:text-gray-700"
+                  }`}
+                >
+                  VÙNG 2
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="text-[10px] text-gray-400 font-medium italic self-end">
           {UI_TEXT.COMPARE_TABLE_UNIT}
         </div>
       </div>

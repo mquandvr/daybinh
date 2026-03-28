@@ -1,6 +1,6 @@
 import React from "react";
 import { Calculator } from "lucide-react";
-import { FuelPrice, VehicleData } from "../types";
+import { FuelPrice, VehicleData, FuelData } from "../types";
 import FuelPriceList from "./ui/FuelPriceList";
 import VehicleSearch from "./ui/VehicleSearch";
 import ComparisonTable from "./ui/ComparisonTable";
@@ -10,6 +10,11 @@ interface VehicleTabProps {
   fuelLoading: boolean;
   vehicleLoading: boolean;
   fuelPrices: FuelPrice[];
+  fuelData: FuelData;
+  selectedProvider: "Petrolimex" | "PVOIL";
+  setSelectedProvider: (provider: "Petrolimex" | "PVOIL") => void;
+  selectedZone: 1 | 2;
+  setSelectedZone: (zone: 1 | 2) => void;
   bikes: VehicleData[];
   selectedBikes: VehicleData[];
   selectedCars: VehicleData[];
@@ -34,6 +39,11 @@ export default function VehicleTabComponent({
   fuelLoading,
   vehicleLoading,
   fuelPrices,
+  fuelData,
+  selectedProvider,
+  setSelectedProvider,
+  selectedZone,
+  setSelectedZone,
   selectedBikes,
   selectedCars,
   toggleBikeSelection,
@@ -59,7 +69,7 @@ export default function VehicleTabComponent({
       {/* Fuel Prices Section */}
       <FuelPriceList
         loading={fuelLoading}
-        fuelPrices={fuelPrices}
+        fuelData={fuelData}
       />
 
       {/* Calculator Section */}
@@ -118,6 +128,10 @@ export default function VehicleTabComponent({
                   loading={vehicleLoading}
                   selectedVehicles={allSelected}
                   comparisonFuels={comparisonFuels}
+                  selectedProvider={selectedProvider}
+                  setSelectedProvider={setSelectedProvider}
+                  selectedZone={selectedZone}
+                  setSelectedZone={setSelectedZone}
                   toggleSelection={(vehicle) => {
                     if (vehicle.type === "motorcycle") toggleBikeSelection(vehicle);
                     else toggleCarSelection(vehicle);
