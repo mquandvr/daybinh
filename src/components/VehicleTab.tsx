@@ -1,75 +1,29 @@
-import React from "react";
 import { Calculator } from "lucide-react";
-import { FuelPrice, VehicleData, FuelData } from "../types";
-import FuelPriceList from "./ui/FuelPriceList";
-import VehicleSearch from "./ui/VehicleSearch";
-import ComparisonTable from "./ui/ComparisonTable";
-import { MESSAGES, UI_TEXT, CONFIG } from "../constants";
+import { FuelState, VehicleSelectionState } from "@/types";
+import { FuelPriceList, VehicleSearch, ComparisonTable } from "@/components/ui";
+import { MESSAGES, UI_TEXT } from "@/constants";
 
 interface VehicleTabProps {
-  fuelLoading: boolean;
-  vehicleLoading: boolean;
-  fuelPrices: FuelPrice[];
-  fuelData: FuelData;
-  selectedProvider: "Petrolimex" | "PVOIL";
-  setSelectedProvider: (provider: "Petrolimex" | "PVOIL") => void;
-  selectedZone: 1 | 2;
-  setSelectedZone: (zone: 1 | 2) => void;
-  bikes: VehicleData[];
-  selectedBikes: VehicleData[];
-  selectedCars: VehicleData[];
-  toggleBikeSelection: (bike: VehicleData) => void;
-  toggleCarSelection: (car: VehicleData) => void;
-  bikeSearch: string;
-  setBikeSearch: (search: string) => void;
-  showBikeResults: boolean;
-  setShowBikeResults: (show: boolean) => void;
-  bikeSearchRef: React.RefObject<HTMLInputElement | null>;
-  filteredBikes: VehicleData[];
-  carSearch: string;
-  setCarSearch: (search: string) => void;
-  showCarResults: boolean;
-  setShowCarResults: (show: boolean) => void;
-  carSearchRef: React.RefObject<HTMLInputElement | null>;
-  filteredCars: VehicleData[];
-  comparisonFuels: FuelPrice[];
+  fuel: FuelState;
+  vehicles: {
+    loading: boolean;
+    bike: VehicleSelectionState;
+    car: VehicleSelectionState;
+  };
 }
 
-export default function VehicleTabComponent({
-  fuelLoading,
-  vehicleLoading,
-  fuelPrices,
-  fuelData,
-  selectedProvider,
-  setSelectedProvider,
-  selectedZone,
-  setSelectedZone,
-  selectedBikes,
-  selectedCars,
-  toggleBikeSelection,
-  toggleCarSelection,
-  bikeSearch,
-  setBikeSearch,
-  showBikeResults,
-  setShowBikeResults,
-  bikeSearchRef,
-  filteredBikes,
-  carSearch,
-  setCarSearch,
-  showCarResults,
-  setShowCarResults,
-  carSearchRef,
-  filteredCars,
-  comparisonFuels,
+export function VehicleTab({
+  fuel,
+  vehicles,
 }: VehicleTabProps) {
-  const allSelected = [...selectedBikes, ...selectedCars];
+  const allSelected = [...vehicles.bike.selected, ...vehicles.car.selected];
 
   return (
     <div className="space-y-8">
       {/* Fuel Prices Section */}
       <FuelPriceList
-        loading={fuelLoading}
-        fuelData={fuelData}
+        loading={fuel.loading}
+        fuelData={fuel.data}
       />
 
       {/* Calculator Section */}
@@ -90,32 +44,22 @@ export default function VehicleTabComponent({
           {/* Search Section - 50/50 Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <VehicleSearch
-              loading={vehicleLoading}
+              loading={vehicles.loading}
               label={MESSAGES.SEARCH_LABEL_BIKE}
               placeholder={MESSAGES.SEARCH_PLACEHOLDER_BIKE}
-              searchValue={bikeSearch}
-              setSearchValue={setBikeSearch}
-              showResults={showBikeResults}
-              setShowResults={setShowBikeResults}
-              inputRef={bikeSearchRef}
-              filteredVehicles={filteredBikes}
-              selectedVehicles={selectedBikes}
-              toggleSelection={toggleBikeSelection}
+              search={vehicles.bike.search}
+              selectedVehicles={vehicles.bike.selected}
+              toggleSelection={vehicles.bike.toggle}
               type="motorcycle"
             />
 
             <VehicleSearch
-              loading={vehicleLoading}
+              loading={vehicles.loading}
               label={MESSAGES.SEARCH_LABEL_CAR}
               placeholder={MESSAGES.SEARCH_PLACEHOLDER_CAR}
-              searchValue={carSearch}
-              setSearchValue={setCarSearch}
-              showResults={showCarResults}
-              setShowResults={setShowCarResults}
-              inputRef={carSearchRef}
-              filteredVehicles={filteredCars}
-              selectedVehicles={selectedCars}
-              toggleSelection={toggleCarSelection}
+              search={vehicles.car.search}
+              selectedVehicles={vehicles.car.selected}
+              toggleSelection={vehicles.car.toggle}
               type="car"
             />
           </div>
@@ -125,22 +69,26 @@ export default function VehicleTabComponent({
             {allSelected.length > 0 ? (
               <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <ComparisonTable
-                  loading={vehicleLoading}
+                  loading={vehicles.loading}
                   selectedVehicles={allSelected}
-                  comparisonFuels={comparisonFuels}
-                  selectedProvider={selectedProvider}
-                  setSelectedProvider={setSelectedProvider}
-                  selectedZone={selectedZone}
-                  setSelectedZone={setSelectedZone}
+                  comparisonFuels={fuel.comparisonFuels}
+                  provider={{
+                    selected: fuel.selectedProvider,
+                    setSelected: fuel.setSelectedProvider
+                  }}
+                  zone={{
+                    selected: fuel.selectedZone,
+                    setSelected: fuel.setSelectedZone
+                  }}
                   toggleSelection={(vehicle) => {
-                    if (vehicle.type === "motorcycle") toggleBikeSelection(vehicle);
-                    else toggleCarSelection(vehicle);
+                    if (vehicle.type === "motorcycle") vehicles.bike.toggle(vehicle);
+                    else vehicles.car.toggle(vehicle);
                   }}
                   onAddMore={() => {
                     // Default to bike search focus if adding more
-                    bikeSearchRef.current?.focus();
-                    setShowBikeResults(true);
-                    bikeSearchRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    vehicles.bike.search.ref.current?.focus();
+                    vehicles.bike.search.setShowResults(true);
+                    vehicles.bike.search.ref.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                   }}
                 />
               </div>

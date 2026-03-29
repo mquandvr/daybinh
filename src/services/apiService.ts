@@ -1,9 +1,9 @@
-import { FuelPrice, VehicleData, FuelData } from "../types";
-import { API_ENDPOINTS, MESSAGES, UI_TEXT } from "../constants";
-import { validateArray, parseFuelCapacity } from "../lib/utils";
-import dummyFuels from "../../data-dummy/dummy_fuels.json";
-import dummyMotorcycles from "../../data-dummy/dummy_motorcycles.json";
-import dummyCars from "../../data-dummy/dummy_cars.json";
+import { FuelPrice, VehicleData, FuelData } from "@/types";
+import { API_ENDPOINTS, MESSAGES, UI_TEXT } from "@/constants";
+import { validateArray, parseFuelCapacity } from "@/lib";
+import dummyFuels from "@/../data-dummy/dummy_fuels.json";
+import dummyMotorcycles from "@/../data-dummy/dummy_motorcycles.json";
+import dummyCars from "@/../data-dummy/dummy_cars.json";
 
 const processFuelData = (data: any): FuelData => {
   if (!validateArray(data)) return { petrolimex: [], pvoil: [] };
@@ -26,8 +26,12 @@ const processFuelData = (data: any): FuelData => {
       let change = 0;
       let change2 = 0;
       
-      if (current.length > 0 && previous.length > 0 && petrolimexId) {
-        const compareItem = previous.find((p: any) => (p.petrolimex_id || p.id?.toString()) === petrolimexId);
+      if (current.length > 0 && previous.length > 0) {
+        const compareItem = previous.find((p: any) => {
+          if (petrolimexId && p.petrolimex_id === petrolimexId) return true;
+          return p.title === name || p.name === name;
+        });
+        
         if (compareItem) {
           const oldPrice = Number(compareItem.zone1_price || compareItem.price) || 0;
           change = price - oldPrice;

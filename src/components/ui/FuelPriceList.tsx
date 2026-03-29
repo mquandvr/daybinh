@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { TrendingUp, TrendingDown, Info, X } from "lucide-react";
-import { FuelData, FuelPrice } from "../../types";
-import { UI_TEXT, MESSAGES } from "../../constants";
+import { FuelData, FuelPrice } from "@/types";
+import {  MESSAGES } from "@/constants";
 import { motion, AnimatePresence } from "motion/react";
 
 interface FuelPriceListProps {
@@ -9,7 +9,7 @@ interface FuelPriceListProps {
   fuelData: FuelData;
 }
 
-export default function FuelPriceList({
+export function FuelPriceList({
   loading,
   fuelData,
 }: FuelPriceListProps) {

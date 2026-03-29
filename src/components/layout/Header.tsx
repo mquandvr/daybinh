@@ -1,18 +1,19 @@
-import React from "react";
-import { Fuel, RefreshCw, Sun, Moon } from "lucide-react";
-import { UI_TEXT, MESSAGES } from "../../constants";
+import { Fuel, RefreshCw } from "lucide-react";
+import { UI_TEXT, MESSAGES } from "@/constants";
 
 interface HeaderProps {
   lastUpdated: string;
   fuelLoading: boolean;
   vehicleLoading: boolean;
+  isDummy: boolean;
   onRefresh: () => void;
 }
 
-export default function Header({
+export function Header({
   lastUpdated,
   fuelLoading,
   vehicleLoading,
+  isDummy,
   onRefresh,
 }: HeaderProps) {
   const loading = fuelLoading || vehicleLoading;
@@ -26,11 +27,18 @@ export default function Header({
               <Fuel className="w-7 h-7 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-black tracking-tighter text-gray-900 uppercase italic">
-                {UI_TEXT.APP_TITLE}
-              </h1>
               <div className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <h1 className="text-xl font-black tracking-tighter text-gray-900 uppercase italic">
+                  {UI_TEXT.APP_TITLE}
+                </h1>
+                {isDummy && (
+                  <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-[8px] font-black rounded uppercase tracking-widest border border-amber-200 animate-pulse">
+                    {MESSAGES.DUMMY_DATA_NOTE}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <div className={`w-1.5 h-1.5 rounded-full ${isDummy ? 'bg-amber-500' : 'bg-emerald-500'} animate-pulse`} />
                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                   {UI_TEXT.LAST_UPDATED}: {lastUpdated || MESSAGES.LOADING_PLACEHOLDER}
                 </p>

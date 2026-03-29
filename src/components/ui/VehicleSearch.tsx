@@ -1,34 +1,23 @@
-import React from "react";
 import { RefreshCw, Bike, Car } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { VehicleData } from "../../types";
-import { UI_TEXT } from "../../constants";
+import { VehicleData, SearchState, VehicleType } from "@/types";
+import { UI_TEXT } from "@/constants";
 
 interface VehicleSearchProps {
   loading?: boolean;
   label: string;
   placeholder: string;
-  searchValue: string;
-  setSearchValue: (val: string) => void;
-  showResults: boolean;
-  setShowResults: (show: boolean) => void;
-  inputRef: React.RefObject<HTMLInputElement | null>;
-  filteredVehicles: VehicleData[];
+  search: SearchState;
   selectedVehicles: VehicleData[];
   toggleSelection: (vehicle: VehicleData) => void;
-  type: "motorcycle" | "car";
+  type: VehicleType;
 }
 
-export default function VehicleSearch({
+export function VehicleSearch({
   loading,
   label,
   placeholder,
-  searchValue,
-  setSearchValue,
-  showResults,
-  setShowResults,
-  inputRef,
-  filteredVehicles,
+  search,
   selectedVehicles,
   toggleSelection,
   type,
@@ -42,23 +31,23 @@ export default function VehicleSearch({
       </label>
       <div className="relative">
         <input
-          ref={inputRef}
+          ref={search.ref}
           type="text"
           disabled={loading}
           placeholder={placeholder}
           className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 transition-all font-medium disabled:cursor-not-allowed"
-          value={searchValue}
+          value={search.value}
           onChange={(e) => {
-            setSearchValue(e.target.value);
-            setShowResults(true);
+            search.setValue(e.target.value);
+            search.setShowResults(true);
           }}
-          onFocus={() => setShowResults(true)}
+          onFocus={() => search.setShowResults(true)}
         />
-        {searchValue && !loading && (
+        {search.value && !loading && (
           <button
             onClick={() => {
-              setSearchValue("");
-              setShowResults(false);
+              search.setValue("");
+              search.setShowResults(false);
             }}
             className="absolute right-10 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-200 rounded-full transition-colors"
             title={UI_TEXT.ACTION_DELETE}
@@ -71,14 +60,14 @@ export default function VehicleSearch({
 
       {/* Search Results Dropdown */}
       <AnimatePresence>
-        {showResults && filteredVehicles.length > 0 && (
+        {search.showResults && search.filtered.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 5 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 5 }}
             className="absolute z-20 w-full mt-2 bg-white border border-gray-100 rounded-xl shadow-xl max-h-60 overflow-y-auto"
           >
-            {filteredVehicles.map((vehicle) => {
+            {search.filtered.map((vehicle) => {
               const isSelected = selectedVehicles.some(v => v.id === vehicle.id);
               return (
                 <button
@@ -103,10 +92,10 @@ export default function VehicleSearch({
       </AnimatePresence>
 
       {/* Overlay to close dropdown */}
-      {showResults && (
+      {search.showResults && (
         <div
           className="fixed inset-0 z-10"
-          onClick={() => setShowResults(false)}
+          onClick={() => search.setShowResults(false)}
         />
       )}
     </div>

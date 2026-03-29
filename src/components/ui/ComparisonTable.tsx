@@ -1,8 +1,7 @@
-import React from "react";
 import { Trash2, Plus, Bike, Car, MapPin, Fuel } from "lucide-react";
-import { FuelPrice, VehicleData } from "../../types";
-import { BIKE_COLORS, UI_TEXT } from "../../constants";
-import { formatCurrency, calculateFuelCost } from "../../lib/utils";
+import { FuelPrice, VehicleData, ProviderSelectionState, ZoneSelectionState } from "@/types";
+import { BIKE_COLORS, UI_TEXT } from "@/constants";
+import { formatCurrency, calculateFuelCost } from "@/lib";
 
 interface ComparisonTableProps {
   loading?: boolean;
@@ -11,23 +10,19 @@ interface ComparisonTableProps {
   toggleSelection: (vehicle: VehicleData) => void;
   onAddMore: () => void;
   maxVehicles?: number;
-  selectedProvider: "Petrolimex" | "PVOIL";
-  setSelectedProvider: (provider: "Petrolimex" | "PVOIL") => void;
-  selectedZone: 1 | 2;
-  setSelectedZone: (zone: 1 | 2) => void;
+  provider: ProviderSelectionState;
+  zone: ZoneSelectionState;
 }
 
-export default function ComparisonTable({
+export function ComparisonTable({
   loading,
   selectedVehicles,
   comparisonFuels,
   toggleSelection,
   onAddMore,
   maxVehicles = 10,
-  selectedProvider,
-  setSelectedProvider,
-  selectedZone,
-  setSelectedZone,
+  provider,
+  zone,
 }: ComparisonTableProps) {
   return (
     <div className={`space-y-4 ${loading ? 'opacity-50 pointer-events-none' : ''}`}>
@@ -40,9 +35,9 @@ export default function ComparisonTable({
             </label>
             <div className="flex p-1 bg-gray-100 rounded-xl">
               <button
-                onClick={() => setSelectedProvider('Petrolimex')}
+                onClick={() => provider.setSelected('Petrolimex')}
                 className={`px-3 py-1.5 rounded-lg text-[10px] font-black transition-all duration-300 ${
-                  selectedProvider === 'Petrolimex'
+                  provider.selected === 'Petrolimex'
                     ? "bg-white text-orange-600 shadow-sm"
                     : "text-gray-500 hover:text-gray-700"
                 }`}
@@ -50,9 +45,9 @@ export default function ComparisonTable({
                 PETROLIMEX
               </button>
               <button
-                onClick={() => setSelectedProvider('PVOIL')}
+                onClick={() => provider.setSelected('PVOIL')}
                 className={`px-3 py-1.5 rounded-lg text-[10px] font-black transition-all duration-300 ${
-                  selectedProvider === 'PVOIL'
+                  provider.selected === 'PVOIL'
                     ? "bg-white text-blue-600 shadow-sm"
                     : "text-gray-500 hover:text-gray-700"
                 }`}
@@ -63,16 +58,16 @@ export default function ComparisonTable({
           </div>
 
           {/* Zone Selection (Petrolimex only) */}
-          {selectedProvider === 'Petrolimex' && (
+          {provider.selected === 'Petrolimex' && (
             <div className="flex flex-col gap-1.5 animate-in fade-in slide-in-from-left-2 duration-300">
               <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest flex items-center gap-1">
                 <MapPin className="w-3 h-3" /> KHU VỰC GIÁ
               </label>
               <div className="flex p-1 bg-gray-100 rounded-xl">
                 <button
-                  onClick={() => setSelectedZone(1)}
+                  onClick={() => zone.setSelected(1)}
                   className={`px-3 py-1.5 rounded-lg text-[10px] font-black transition-all duration-300 ${
-                    selectedZone === 1
+                    zone.selected === 1
                       ? "bg-white text-blue-600 shadow-sm"
                       : "text-gray-500 hover:text-gray-700"
                   }`}
@@ -80,9 +75,9 @@ export default function ComparisonTable({
                   VÙNG 1
                 </button>
                 <button
-                  onClick={() => setSelectedZone(2)}
+                  onClick={() => zone.setSelected(2)}
                   className={`px-3 py-1.5 rounded-lg text-[10px] font-black transition-all duration-300 ${
-                    selectedZone === 2
+                    zone.selected === 2
                       ? "bg-white text-orange-600 shadow-sm"
                       : "text-gray-500 hover:text-gray-700"
                   }`}
