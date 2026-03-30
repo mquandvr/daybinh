@@ -1,6 +1,7 @@
-import { UI_TEXT } from "@/constants";
+import { memo } from "react";
+import { UI_TEXT } from "@/constants/index";
 
-export function Footer() {
+export const Footer = memo(() => {
   return (
     <footer className="py-12 border-t border-gray-100 mt-12 bg-white transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 text-center">
@@ -13,4 +14,4 @@ export function Footer() {
       </div>
     </footer>
   );
-}
+});

@@ -16,7 +16,5 @@ export const MESSAGES = {
   UNKNOWN_BIKE: "Xe không tên",
   UNIT_VND_SHORT: "VND",
   LOADING_PLACEHOLDER: "...",
-  FILTER_KEROSENE: "dầu hỏa",
-  FILTER_DIESEL: "do",
   DUMMY_DATA_NOTE: "Dữ liệu mẫu",
 };

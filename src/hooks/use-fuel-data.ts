@@ -1,17 +1,17 @@
 import { useState, useEffect, useCallback } from "react";
 import { FuelData, FuelProvider, PriceZone } from "@/types";
 import { fetchFuelPrices } from "@/services";
-import { MESSAGES, CONFIG } from "@/constants";
+import { MESSAGES, CONFIG } from "@/constants/index";
 
 export function useFuelData() {
   const [fuelData, setFuelData] = useState<FuelData>({ petrolimex: [], pvoil: [] });
-  const [selectedProvider, setSelectedProvider] = useState<FuelProvider>("Petrolimex");
-  const [selectedZone, setSelectedZone] = useState<PriceZone>(1);
+  const [selectedProvider, setSelectedProvider] = useState<FuelProvider>(CONFIG.FUEL_PROVIDERS.PETROLIMEX);
+  const [selectedZone, setSelectedZone] = useState<PriceZone>(CONFIG.FUEL_ZONES.ZONE_1);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<string>("");
   const [isDummy, setIsDummy] = useState(false);
 
-  const fetchData = useCallback(async () => {
+  const refreshFuelPrices = useCallback(async () => {
     setLoading(true);
     
     // 30s timeout to auto-disable loading
@@ -37,17 +37,17 @@ export function useFuelData() {
     const savedProvider = localStorage.getItem("selectedProvider");
     const savedZone = localStorage.getItem("selectedZone");
 
-    if (savedProvider === "Petrolimex" || savedProvider === "PVOIL") {
+    if (CONFIG.FUEL_PROVIDERS_DATA.some(p => p.value === savedProvider)) {
       setSelectedProvider(savedProvider as FuelProvider);
     }
-    if (savedZone === "1" || savedZone === "2") {
+    if (CONFIG.FUEL_ZONES_DATA.some(z => z.value.toString() === savedZone)) {
       setSelectedZone(Number(savedZone) as PriceZone);
     }
 
-    fetchData();
-    const interval = setInterval(fetchData, CONFIG.REFRESH_INTERVAL_MS);
+    refreshFuelPrices();
+    const interval = setInterval(refreshFuelPrices, CONFIG.REFRESH_INTERVAL_MS);
     return () => clearInterval(interval);
-  }, [fetchData]);
+  }, [refreshFuelPrices]);
 
   useEffect(() => {
     localStorage.setItem("selectedProvider", selectedProvider);
@@ -66,6 +66,6 @@ export function useFuelData() {
     loading,
     lastUpdated,
     isDummy,
-    refresh: fetchData,
+    refresh: refreshFuelPrices,
   };
 }

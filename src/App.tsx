@@ -1,20 +1,18 @@
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 import { motion } from "motion/react";
 import { VehicleTab, Header, Footer } from "@/components";
-import { MESSAGES } from "@/constants";
+import { MESSAGES, CONFIG } from "@/constants/index";
 import { useFuelData, useVehicleSelection } from "@/hooks";
+import { isGasoline } from "@/lib";
 
 export default function App() {
-  const fuel = useFuelData();
-  const vehicles = useVehicleSelection();
+  const fuelDataState = useFuelData();
+  const vehicleSelectionState = useVehicleSelection();
 
   const comparisonFuels = useMemo(() => {
-    const prices = fuel.selectedProvider === "Petrolimex" ? fuel.data.petrolimex : fuel.data.pvoil;
-    return prices.filter(p => {
-      const name = p.name.toLowerCase();
-      return !(name.includes(MESSAGES.FILTER_KEROSENE) || name.includes(MESSAGES.FILTER_DIESEL));
-    }).map(p => {
-      if (fuel.selectedProvider === "Petrolimex" && fuel.selectedZone === 2 && p.zone2_price !== undefined) {
+    const prices = fuelDataState.selectedProvider === CONFIG.FUEL_PROVIDERS.PETROLIMEX ? fuelDataState.data.petrolimex : fuelDataState.data.pvoil;
+    return prices.filter(p => isGasoline(p.name)).map(p => {
+      if (fuelDataState.selectedProvider === CONFIG.FUEL_PROVIDERS.PETROLIMEX && fuelDataState.selectedZone === CONFIG.FUEL_ZONES.ZONE_2 && p.zone2_price !== undefined) {
         return {
           ...p,
           price: p.zone2_price,
@@ -23,9 +21,30 @@ export default function App() {
       }
       return p;
     });
-  }, [fuel.data, fuel.selectedProvider, fuel.selectedZone]);
+  }, [fuelDataState.data, fuelDataState.selectedProvider, fuelDataState.selectedZone]);
 
-  const isInitialLoading = fuel.loading && fuel.data.petrolimex.length === 0 && vehicles.loading && vehicles.bike.all.length === 0;
+  const refreshAllData = useCallback(() => {
+    fuelDataState.refresh();
+    vehicleSelectionState.refresh();
+  }, [fuelDataState, vehicleSelectionState]);
+
+  const memoizedFuelState = useMemo(() => ({
+    loading: fuelDataState.loading,
+    data: fuelDataState.data,
+    selectedProvider: fuelDataState.selectedProvider,
+    setSelectedProvider: fuelDataState.setSelectedProvider,
+    selectedZone: fuelDataState.selectedZone,
+    setSelectedZone: fuelDataState.setSelectedZone,
+    comparisonFuels
+  }), [fuelDataState.loading, fuelDataState.data, fuelDataState.selectedProvider, fuelDataState.setSelectedProvider, fuelDataState.selectedZone, fuelDataState.setSelectedZone, comparisonFuels]);
+
+  const memoizedVehicleState = useMemo(() => ({
+    loading: vehicleSelectionState.loading,
+    bike: vehicleSelectionState.bike,
+    car: vehicleSelectionState.car
+  }), [vehicleSelectionState.loading, vehicleSelectionState.bike, vehicleSelectionState.car]);
+
+  const isInitialLoading = fuelDataState.loading && fuelDataState.data.petrolimex.length === 0 && vehicleSelectionState.loading && vehicleSelectionState.bike.all.length === 0;
 
   if (isInitialLoading) {
     return (
@@ -45,18 +64,15 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#F5F5F5] text-[#1A1A1A] font-sans selection:bg-orange-100 transition-colors duration-300">
       <Header 
-        lastUpdated={fuel.lastUpdated}
-        fuelLoading={fuel.loading}
-        vehicleLoading={vehicles.loading}
-        isDummy={fuel.isDummy}
-        onRefresh={() => {
-          fuel.refresh();
-          vehicles.refresh();
-        }}
+        lastUpdated={fuelDataState.lastUpdated}
+        fuelLoading={fuelDataState.loading}
+        vehicleLoading={vehicleSelectionState.loading}
+        isDummy={fuelDataState.isDummy}
+        onRefresh={refreshAllData}
       />
 
       <main className="max-w-7xl mx-auto p-4 sm:p-6 space-y-6 relative">
-        {(fuel.loading || vehicles.loading) && (fuel.data.petrolimex.length > 0 || vehicles.bike.all.length > 0) && (
+        {(fuelDataState.loading || vehicleSelectionState.loading) && (fuelDataState.data.petrolimex.length > 0 || vehicleSelectionState.bike.all.length > 0) && (
           <div className="fixed bottom-6 right-6 z-50">
             <div className="bg-white px-4 py-2 rounded-full shadow-2xl border border-gray-100 flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300">
               <div className="w-4 h-4 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />
@@ -66,20 +82,8 @@ export default function App() {
         )}
 
         <VehicleTab
-          fuel={{
-            loading: fuel.loading,
-            data: fuel.data,
-            selectedProvider: fuel.selectedProvider,
-            setSelectedProvider: fuel.setSelectedProvider,
-            selectedZone: fuel.selectedZone,
-            setSelectedZone: fuel.setSelectedZone,
-            comparisonFuels
-          }}
-          vehicles={{
-            loading: vehicles.loading,
-            bike: vehicles.bike,
-            car: vehicles.car
-          }}
+          fuel={memoizedFuelState}
+          vehicles={memoizedVehicleState}
         />
       </main>
 

@@ -1,5 +1,6 @@
+import { memo } from "react";
 import { Fuel, RefreshCw } from "lucide-react";
-import { UI_TEXT, MESSAGES } from "@/constants";
+import { UI_TEXT, MESSAGES } from "@/constants/index";
 
 interface HeaderProps {
   lastUpdated: string;
@@ -9,13 +10,13 @@ interface HeaderProps {
   onRefresh: () => void;
 }
 
-export function Header({
+export const Header = memo(({
   lastUpdated,
   fuelLoading,
   vehicleLoading,
   isDummy,
   onRefresh,
-}: HeaderProps) {
+}: HeaderProps) => {
   const loading = fuelLoading || vehicleLoading;
 
   return (
@@ -50,7 +51,7 @@ export function Header({
             <button
               onClick={onRefresh}
               disabled={loading}
-              className="flex items-center gap-2 px-5 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-gray-200 active:scale-95"
+              className="btn-primary"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
               <span className="hidden sm:inline">{UI_TEXT.REFRESH_BUTTON}</span>
@@ -60,4 +61,4 @@ export function Header({
       </div>
     </header>
   );
-}
+});

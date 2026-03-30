@@ -6,6 +6,10 @@
 
 This contains everything you need to run your app locally.
 
+## Guidelines
+- Always check for clean code to ensure readability and maintainability.
+- Always update markdown files (`README.md`, `BUSINESS_LOGIC.md`) when there are changes in logic or structure.
+
 ## Run Locally
 
 **Prerequisites:** Node.js

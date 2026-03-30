@@ -37,21 +37,61 @@ The "Đầy Bình" application helps users calculate the cost of filling up thei
 - **Storage:** The list of selected vehicles, selected provider, and selected zone are saved to `localStorage` to persist state across page reloads.
 - **Auto-Update:** Data is automatically refreshed every 5 minutes.
 
-## 5. Source Code Structure & Constants
-- **Constants:** Organized into subfolders in `src/constants/` for better management:
-    - `api.ts`: API endpoints.
-    - `colors.ts`: UI color palettes.
-    - `messages.ts`: Application messages and labels.
-    - `ui.ts`: UI text and titles.
-    - `config.ts`: Application configuration (limits, intervals).
-- **Custom Hooks:** Business logic is encapsulated in custom hooks for better reusability and cleaner components:
-    - `useFuelData.ts`: Manages fetching, processing, and state for fuel prices, providers, and zones. Includes a 30-second loading timeout and dummy data detection.
-    - `useVehicleSelection.ts`: Manages vehicle fetching, search, selection, and persistence. Groups search parameters into a unified `SearchState` interface and includes a 30-second loading timeout.
-- **Project Structure & Path Aliases:**
-    - **Path Aliases:** The project uses the `@/` alias to point to the `src/` directory, simplifying import paths (e.g., `import { ... } from "@/components"`).
-    - **Index Files:** Each major directory (`components`, `hooks`, `lib`, `services`, `types`, `constants`) contains an `index.ts` file that centralizes exports, allowing for cleaner and more organized imports.
-    - **Named Exports:** Components and functions are exported as named exports to improve code discoverability and consistency.
-- **Utils:** Common functions for cost calculation (`calculateFuelCost`), currency formatting (`formatCurrency`), data validation (`validateArray`), and fuel capacity parsing (`parseFuelCapacity`) are located in `src/lib/utils.ts` and exported via `src/lib/index.ts`.
-- **Component Organization:** Components are refactored to use grouped props (e.g., `fuel`, `vehicles`) to reduce prop drilling and improve readability. The `FuelState`, `VehicleSelectionState`, `SearchState`, `ProviderSelectionState`, and `ZoneSelectionState` interfaces are used to standardize data management and selection logic across the application.
-- **Loading State:** A 30-second timeout is implemented in data fetching hooks to automatically disable the loading state if the API does not respond within the expected timeframe, ensuring the UI remains interactive.
-- **Dummy Data Notification:** The application explicitly notifies the user via a "Dữ liệu mẫu" (Dummy Data) badge in the header if the live API fails and fallback data is being used.
+## 5. Performance & Memory Optimization
+
+The application implements several strategies to ensure high performance, low memory footprint, and fast page load times:
+
+### 5.1. Component Memoization
+- **React.memo:** Used extensively across the codebase (`FuelPriceList`, `ComparisonTable`, `VehicleSearch`, `VehicleTab`, `Header`, `Footer`) to prevent unnecessary re-renders of components when their props haven't changed.
+- **Granular Sub-components:** Large components are broken down into smaller, memoized sub-components (e.g., `FuelCard`, `FuelRow`, `VehicleRow`, `TableHeader`, `SearchResultItem`) to isolate re-renders.
+
+### 5.2. Hook & State Optimization
+- **useMemo:** Stabilizes complex objects and arrays returned by hooks (`useFuelData`, `useVehicleSelection`) and derived state in components. This ensures that child components receiving these objects as props don't re-render unless the underlying data actually changes.
+- **useCallback:** Memoizes event handlers and callbacks (e.g., `toggleSelection`, `onRefresh`) to maintain stable function references across renders.
+- **State Stabilization:** In `App.tsx`, state objects passed to `VehicleTab` are wrapped in `useMemo` to prevent cascading re-renders.
+
+### 5.3. Efficient Data Processing
+- **Map-based Lookups:** In `apiService.ts`, fuel price changes are calculated using a `Map` for $O(1)$ lookups instead of $O(N)$ array searches, significantly improving processing speed for large datasets.
+- **Centralized Logic:** Utility functions like `isGasoline` and `filterFuelByType` are used to perform data filtering efficiently and consistently.
+
+### 5.4. Resource Loading
+- **Lazy Loading:** Images (e.g., the Petrolimex zone map) use the `loading="lazy"` attribute to defer loading until they are near the viewport, improving initial page load speed.
+- **Conditional Rendering:** Heavy components or sections (like the comparison table) are only rendered when needed (e.g., when vehicles are selected).
+
+## 6. Extensibility & Maintainability (SOLID Principles)
+
+### 6.1. Single Responsibility Principle (SRP)
+- **Service Splitting:** The monolithic `apiService.ts` has been split into `fuelService.ts` and `vehicleService.ts`. Each service is now responsible for a single domain (fuel data vs. vehicle data).
+- **Component Decomposition:** UI components are broken down into small, focused sub-components that handle specific parts of the interface.
+
+### 6.2. Open/Closed Principle (OCP)
+- **Generic Utilities:** The `filterFuels` utility in `src/lib/utils.ts` is now a generic function that accepts a predicate, allowing for new filtering criteria to be added without modifying the utility itself.
+
+### 6.3. Dependency Inversion Principle (DIP)
+- **Hook Abstraction:** Components depend on high-level hooks (`useFuelData`, `useVehicleSelection`) rather than low-level service implementations. This allows for easier swapping of data sources or logic.
+
+### 6.4. CSS Optimization & Consistency
+- **Tailwind Component Layer:** Common UI patterns are abstracted into the `@layer components` in `src/index.css`.
+- **Utility Classes:** Classes like `card-base`, `badge-base`, `btn-primary`, and `input-base` ensure visual consistency across the app while significantly reducing the number of utility classes repeated in JSX.
+- **Maintainability:** Changing a global style (like card border radius or button padding) now only requires a single update in the CSS file.
+
+### 6.5. Naming Standards
+- **Components:** PascalCase (e.g., `Header.tsx`, `VehicleSearch.tsx`).
+- **Hooks:** kebab-case (e.g., `use-fuel-data.ts`, `use-vehicle-selection.ts`).
+- **Services:** kebab-case (e.g., `fuel-service.ts`, `vehicle-service.ts`).
+- **Data Files:** kebab-case (e.g., `dummy-cars.json`, `dummy-fuels.json`).
+- **Directories:** kebab-case (e.g., `data-dummy`).
+- **Variables & Methods:** camelCase (e.g., `fuelDataState`, `refreshFuelPrices`).
+- **Constants:** UPPER_SNAKE_CASE (e.g., `API_ENDPOINTS`, `CONFIG`).
+- **Descriptive Naming:** Avoid generic names like `data`, `item`, `arr1`. Use descriptive names like `petrolimexCurrent`, `vehicle`, `memoizedFuelState`.
+
+### 6.6. Type Safety
+- **Strict TypeScript:** The application uses strict TypeScript configurations.
+- **Readonly Properties:** Interfaces use `readonly` to enforce immutability where appropriate, preventing accidental state mutations.
+- **Advanced Types:** Utilizes advanced TS features like `readonly` arrays, type guards (`is data is T[]`), and explicit API response types (`FuelApiResponse`, `RawFuelItem`).
+- **No 'any':** The codebase is refactored to eliminate the use of `any`, replacing it with `unknown` and proper type assertions or guards for safer data handling.
+- **Exhaustive Checks:** Type safety is enforced at the service level by mapping raw API data to strictly typed internal models.
+
+## 7. Development Guidelines
+- **Clean Code:** Always check for clean code to ensure readability and maintainability.
+- **Documentation:** Always update markdown files (`README.md`, `BUSINESS_LOGIC.md`) when there are changes in logic or structure.

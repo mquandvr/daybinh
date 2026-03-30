@@ -20,4 +20,9 @@ export const UI_TEXT = {
   ACTION_DELETE: "Xóa",
   ACTION_DELETE_VEHICLE: "Xoá xe",
   ACTION_ADD_MORE: (count: number) => `Chọn thêm (còn ${count})`,
+  LABEL_FUEL_PROVIDER: "NHÀ CUNG CẤP",
+  LABEL_PRICE_ZONE: "KHU VỰC GIÁ",
+  LABEL_ZONE_PREFIX: "VÙNG",
+  ZONE_MODAL_TITLE: "Phân vùng giá Petrolimex",
+  ZONE_MODAL_ALT: "Phân vùng Petrolimex",
 };

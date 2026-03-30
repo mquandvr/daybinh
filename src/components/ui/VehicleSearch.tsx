@@ -1,7 +1,8 @@
+import { memo } from "react";
 import { RefreshCw, Bike, Car } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { VehicleData, SearchState, VehicleType } from "@/types";
-import { UI_TEXT } from "@/constants";
+import { UI_TEXT } from "@/constants/index";
 
 interface VehicleSearchProps {
   loading?: boolean;
@@ -13,7 +14,32 @@ interface VehicleSearchProps {
   type: VehicleType;
 }
 
-export function VehicleSearch({
+const SearchResultItem = memo(({ 
+  vehicle, 
+  isSelected, 
+  onToggle 
+}: { 
+  vehicle: VehicleData, 
+  isSelected: boolean, 
+  onToggle: (v: VehicleData) => void 
+}) => (
+  <button
+    className={`w-full text-left px-4 py-3 transition-colors border-b border-gray-50 last:border-0 flex justify-between items-center ${
+      isSelected ? "bg-slate-100" : "hover:bg-slate-50"
+    }`}
+    onClick={() => onToggle(vehicle)}
+  >
+    <div className="flex items-center gap-2">
+      <span className={`font-bold ${isSelected ? "text-slate-900" : "text-gray-700"}`}>{vehicle.name}</span>
+      {isSelected && <div className="w-1.5 h-1.5 bg-slate-900 rounded-full" />}
+    </div>
+    <div className="px-2 py-0.5 bg-gray-100 text-gray-500 rounded-md text-[10px] font-black uppercase">
+      {vehicle.capacity} {UI_TEXT.UNIT_LITRE}
+    </div>
+  </button>
+));
+
+export const VehicleSearch = memo(({
   loading,
   label,
   placeholder,
@@ -21,12 +47,12 @@ export function VehicleSearch({
   selectedVehicles,
   toggleSelection,
   type,
-}: VehicleSearchProps) {
+}: VehicleSearchProps) => {
   const Icon = type === "motorcycle" ? Bike : Car;
 
   return (
-    <div className={`space-y-3 relative ${loading ? 'opacity-50 pointer-events-none' : ''}`}>
-      <label className="text-xs font-bold uppercase text-gray-400 tracking-widest">
+    <div className={`flex flex-col gap-3 relative ${loading ? 'opacity-50 pointer-events-none' : ''}`}>
+      <label className="text-xs font-bold uppercase text-gray-400 tracking-widest block h-4">
         {label}
       </label>
       <div className="relative">
@@ -35,7 +61,7 @@ export function VehicleSearch({
           type="text"
           disabled={loading}
           placeholder={placeholder}
-          className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 transition-all font-medium disabled:cursor-not-allowed"
+          className="input-base pr-10"
           value={search.value}
           onChange={(e) => {
             search.setValue(e.target.value);
@@ -56,48 +82,36 @@ export function VehicleSearch({
           </button>
         )}
         <Icon className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
-      </div>
 
-      {/* Search Results Dropdown */}
-      <AnimatePresence>
-        {search.showResults && search.filtered.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 5 }}
-            className="absolute z-20 w-full mt-2 bg-white border border-gray-100 rounded-xl shadow-xl max-h-60 overflow-y-auto"
-          >
-            {search.filtered.map((vehicle) => {
-              const isSelected = selectedVehicles.some(v => v.id === vehicle.id);
-              return (
-                <button
+        {/* Search Results Dropdown */}
+        <AnimatePresence>
+          {search.showResults && search.filtered.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 5 }}
+              className="absolute z-20 w-full mt-2 bg-white border border-gray-100 rounded-xl shadow-xl max-h-60 overflow-y-auto"
+            >
+              {search.filtered.map((vehicle) => (
+                <SearchResultItem 
                   key={vehicle.id}
-                  className={`w-full text-left px-4 py-3 transition-colors border-b border-gray-50 last:border-0 flex justify-between items-center ${
-                    isSelected ? "bg-slate-100" : "hover:bg-slate-50"
-                  }`}
-                  onClick={() => toggleSelection(vehicle)}
-                >
-                  <div className="flex items-center gap-2">
-                    <span className={`font-bold ${isSelected ? "text-slate-900" : "text-gray-700"}`}>{vehicle.name}</span>
-                    {isSelected && <div className="w-1.5 h-1.5 bg-slate-900 rounded-full" />}
-                  </div>
-                  <div className="px-2 py-0.5 bg-gray-100 text-gray-500 rounded-md text-[10px] font-black uppercase">
-                    {vehicle.capacity} {UI_TEXT.UNIT_LITRE}
-                  </div>
-                </button>
-              );
-            })}
-          </motion.div>
-        )}
-      </AnimatePresence>
+                  vehicle={vehicle}
+                  isSelected={selectedVehicles.some(v => v.id === vehicle.id)}
+                  onToggle={toggleSelection}
+                />
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-      {/* Overlay to close dropdown */}
-      {search.showResults && (
-        <div
-          className="fixed inset-0 z-10"
-          onClick={() => search.setShowResults(false)}
-        />
-      )}
+        {/* Overlay to close dropdown */}
+        {search.showResults && (
+          <div
+            className="fixed inset-0 z-10"
+            onClick={() => search.setShowResults(false)}
+          />
+        )}
+      </div>
     </div>
   );
-}
+});
